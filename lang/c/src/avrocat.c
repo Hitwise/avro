@@ -31,18 +31,25 @@ process_file(const char *filename)
 {
 	avro_file_reader_t  reader;
 
+	FILE *fp;
+
 	if (filename == NULL) {
-		if (avro_file_reader_fp(stdin, "<stdin>", 0, &reader)) {
-			fprintf(stderr, "Error opening <stdin>:\n  %s\n",
-				avro_strerror());
-			exit(1);
-		}
+		fp = stdin;
+		filename = "<stdin>";
 	} else {
-		if (avro_file_reader(filename, &reader)) {
+		fp = fopen(filename, "rb");
+
+		if (fp == NULL) {
 			fprintf(stderr, "Error opening %s:\n  %s\n",
-				filename, avro_strerror());
-			exit(1);
+				filename, strerror(errno));
 		}
+	}
+
+	if (avro_file_reader_fp(fp, filename, 0, &reader)) {
+		fprintf(stderr, "Error opening %s:\n  %s\n",
+			filename, avro_strerror());
+		fclose(fp);
+		exit(1);
 	}
 
 	avro_schema_t  wschema;
@@ -67,9 +74,15 @@ process_file(const char *filename)
 		avro_value_reset(&value);
 	}
 
+	if (!feof(fp)) {
+		fprintf(stderr, "Error: %s\n", avro_strerror());
+	}
+
 	avro_file_reader_close(reader);
 	avro_value_decref(&value);
 	avro_value_iface_decref(iface);
+
+	fclose(fp);
 }
 
 
