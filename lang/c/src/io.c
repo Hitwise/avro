@@ -434,3 +434,11 @@ void avro_writer_free(avro_writer_t writer)
 		avro_freet(struct _avro_writer_file_t, writer);
 	}
 }
+
+int avro_reader_is_eof(avro_reader_t reader)
+{
+	if (is_file_io(reader)) {
+		return feof(avro_reader_to_file(reader)->fp);
+	}
+	return 0;
+}
