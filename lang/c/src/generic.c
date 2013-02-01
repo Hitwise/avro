@@ -3340,6 +3340,11 @@ avro_generic_union_set_branch(const avro_value_iface_t *viface,
 		discriminant, self->discriminant);
 #endif
 
+	if (discriminant >= (int)iface->branch_count || discriminant < 0) {
+		avro_set_error("Invalid union discriminant value: (%d)",
+					       discriminant);
+		return 1;
+	}
 	/*
 	 * If the new desired branch is different than the currently
 	 * active one, then finalize the old branch and initialize the
